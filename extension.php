@@ -88,7 +88,7 @@ class DiscordExtension extends Minz_Extension
     return $mapping;
   }
 
-  public function handleEntryBeforeAdd($entry)
+  public function handleEntryBeforeAdd(FreshRSS_Entry $entry)
   {
     $shouldIgnoreAutoread = $this->getSystemConfigurationValue("ignore_autoread", false);
 
@@ -134,6 +134,20 @@ class DiscordExtension extends Minz_Extension
       );
     } elseif ($embedAsImage) {
 			$thumbs = $entry->thumbnail();
+
+			// Fix: Ensure $thumbs is treated as an array, not a string
+			if (!is_array($thumbs) && $thumbs !== null) {
+				Minz_Log::warning("[Discord] ⚠️ Thumbnail is not an array: " . var_export($thumbs, true));
+				Minz_Log::warning("[Discord] ⚠️ Entry URL: " . $url);
+				Minz_Log::warning("[Discord] ⚠️ Entry title: " . $entry->title());
+				$this->sendMessage(
+					$webhookUrl,
+					$username,
+					$avatarUrl,
+					["content" => $url]
+				);
+				return $entry;
+			}
 
 			if (!empty($thumbs)) {
 				// Find thumbnail with the largest width
