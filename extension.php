@@ -180,6 +180,8 @@ class DiscordExtension extends Minz_Extension
 
   public function sendImageMessage($url, $username, $avatar_url, $image_url)
   {
+    $ch = null; // Initialize variable to ensure it exists
+
     try {
       // Download the image content
       $image_content = $this->downloadImage($image_url);
@@ -258,7 +260,10 @@ class DiscordExtension extends Minz_Extension
     } catch (Throwable $err) {
       Minz_Log::error("[Discord] ❌ " . $err);
     } finally {
-      curl_close($ch);
+      // Safely close curl handle if it exists
+      if ($ch !== null) {
+        curl_close($ch);
+      }
     }
   }
 
