@@ -28,7 +28,8 @@ class DiscordExtension extends Minz_Extension
         "avatar_url" => Minz_Request::paramString("avatar_url"),
         "ignore_autoread" => Minz_Request::paramBoolean("ignore_autoread"),
         "embed_as_link_patterns" => Minz_Request::paramString("embed_as_link_patterns"),
-		"embed_as_image_patterns" => Minz_Request::paramString("embed_as_image_patterns"),
+        "embed_as_image_patterns" => Minz_Request::paramString("embed_as_image_patterns"),
+        "tag_webhook_mapping" => Minz_Request::paramString("tag_webhook_mapping"),
       ];
 
       $this->setSystemConfiguration($config);
@@ -39,6 +40,53 @@ class DiscordExtension extends Minz_Extension
         ]);
       }
     }
+  }
+
+  /**
+   * Get the webhook URL for an entry based on its tags
+   * Returns the default URL if no specific mapping exists
+   */
+  private function getWebhookUrlForEntry(FreshRSS_Entry $entry): string
+  {
+    $tagMapping = $this->getSystemConfigurationValue("tag_webhook_mapping", "");
+    $mapping = $this->parseTagWebhookMapping($tagMapping);
+
+    // Check each tag for a matching webhook
+    foreach ($entry->tags() as $tag) {
+      if (isset($mapping[$tag])) {
+        Minz_Log::notice("[Discord] ✅ Using specific webhook for tag: " . $tag);
+        return $mapping[$tag];
+      }
+    }
+
+    // No tag-specific webhook found, use default
+    return $this->getSystemConfigurationValue("url");
+  }
+
+  /**
+   * Parse the tag-webhook mapping string into an associative array
+   */
+  private function parseTagWebhookMapping(string $mappingString): array
+  {
+    $mapping = [];
+    $lines = explode("\n", $mappingString);
+
+    foreach ($lines as $line) {
+      $line = trim($line);
+      if (empty($line) || strpos($line, '=') === false) {
+        continue;
+      }
+
+      list($tag, $webhookUrl) = explode('=', $line, 2);
+      $tag = trim($tag);
+      $webhookUrl = trim($webhookUrl);
+
+      if (!empty($tag) && !empty($webhookUrl)) {
+        $mapping[$tag] = $webhookUrl;
+      }
+    }
+
+    return $mapping;
   }
 
   public function handleEntryBeforeAdd($entry)
@@ -73,18 +121,23 @@ class DiscordExtension extends Minz_Extension
       }
     }
 
+    // Get the appropriate webhook URL based on entry tags
+    $webhookUrl = $this->getWebhookUrlForEntry($entry);
+    $username = $this->getSystemConfigurationValue("username");
+    $avatarUrl = $this->getSystemConfigurationValue("avatar_url");
+
     if ($embedAsLink) {
       $this->sendMessage(
-        $this->getSystemConfigurationValue("url"),
-        $this->getSystemConfigurationValue("username"),
-        $this->getSystemConfigurationValue("avatar_url"),
+        $webhookUrl,
+        $username,
+        $avatarUrl,
         ["content" => $url]
       );
     } elseif ($embedAsImage) {
       $this->sendImageMessage(
-        $this->getSystemConfigurationValue("url"),
-        $this->getSystemConfigurationValue("username"),
-        $this->getSystemConfigurationValue("avatar_url"),
+        $webhookUrl,
+        $username,
+        $avatarUrl,
         $url
       );
     } else {
@@ -102,8 +155,8 @@ class DiscordExtension extends Minz_Extension
           "icon_url" => $this->favicon($entry->feed()->website()),
         ],
         "footer" => [
-          "text" => $this->getSystemConfigurationValue("username"),
-          "icon_url" => $this->getSystemConfigurationValue("avatar_url"),
+          "text" => $username,
+          "icon_url" => $avatarUrl,
         ],
       ];
 
@@ -116,9 +169,9 @@ class DiscordExtension extends Minz_Extension
       }
 
       $this->sendMessage(
-        $this->getSystemConfigurationValue("url"),
-        $this->getSystemConfigurationValue("username"),
-        $this->getSystemConfigurationValue("avatar_url"),
+        $webhookUrl,
+        $username,
+        $avatarUrl,
         ["embeds" => [$embed]]
       );
     }
@@ -199,7 +252,7 @@ class DiscordExtension extends Minz_Extension
         // Fallback to embedded image link
         $this->sendMessage($url, $username, $avatar_url, ["content" => $image_url]);
       } elseif ($http_code >= 200 && $http_code < 300) {
-        Minz_Log::info("[Discord] ✅ Image uploaded successfully");
+        Minz_Log::notice("[Discord] ✅ Image uploaded successfully");
       } else {
         Minz_Log::error("[Discord] ❌ Image upload failed (HTTP " . $http_code . ")");
       }

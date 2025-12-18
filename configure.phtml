@@ -44,13 +44,21 @@ declare(strict_types=1);
       </div>
     </div>
 
-	  <div class="form-group">
-		  <label for="embed_as_image_patterns" class="group-name">Embed as image ...</label>
-		  <div class="group-controls">
-			  <textarea id="embed_as_image_patterns" name="embed_as_image_patterns" class="w100" placeholder="Leave blank to disable"><?= $this->getSystemConfigurationValue("embed_as_image_patterns", "") ?></textarea>
-			  <p class="help"><img class="icon" src="../themes/icons/help.svg" loading="lazy" alt="ℹ️"> Write one search filter per line. Operators <a href="https://freshrss.github.io/FreshRSS/en/users/10_filter.html#with-the-search-field" target="_blank">see documentation</a>.</p>
-		  </div>
-	  </div>
+    <div class="form-group">
+      <label for="embed_as_image_patterns" class="group-name">Embed as image ...</label>
+      <div class="group-controls">
+        <textarea id="embed_as_image_patterns" name="embed_as_image_patterns" class="w100" placeholder="Leave blank to disable"><?= $this->getSystemConfigurationValue("embed_as_image_patterns", "") ?></textarea>
+        <p class="help"><img class="icon" src="../themes/icons/help.svg" loading="lazy" alt="ℹ️"> Write one search filter per line. Operators <a href="https://freshrss.github.io/FreshRSS/en/users/10_filter.html#with-the-search-field" target="_blank">see documentation</a>.</p>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="tag_webhook_mapping" class="group-name">Tag to Webhook Mapping</label>
+      <div class="group-controls">
+        <textarea id="tag_webhook_mapping" name="tag_webhook_mapping" class="w100" placeholder="Format: tag1=webhook_url1&#10;tag2=webhook_url2&#10;Leave blank to use default URL"><?= $this->getSystemConfigurationValue("tag_webhook_mapping", "") ?></textarea>
+        <p class="help"><img class="icon" src="../themes/icons/help.svg" loading="lazy" alt="ℹ️"> Map specific tags to different Discord webhooks. One tag per line in format: tag=webhook_url</p>
+      </div>
+    </div>
   </fieldset>
 
   <div class="form-group form-actions">
