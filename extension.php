@@ -133,12 +133,43 @@ class DiscordExtension extends Minz_Extension
         ["content" => $url]
       );
     } elseif ($embedAsImage) {
-      $this->sendImageMessage(
-        $webhookUrl,
-        $username,
-        $avatarUrl,
-        $url
-      );
+			$thumbs = $entry->thumbnails();
+
+			if (!empty($thumbs)) {
+				// Find thumbnail with the largest width
+				$largestThumb = null;
+				$allThumbUrls = [];
+
+				foreach ($thumbs as $thumb) {
+					$thumbWidth = $thumb['width'] ?? 0;
+					$allThumbUrls[] = $thumb['url'];
+
+					if ($largestThumb === null || $thumbWidth > $largestThumb['width']) {
+						$largestThumb = $thumb;
+					}
+				}
+
+				// Log all available thumbnails
+				Minz_Log::notice("[Discord] 📷 Available thumbnails for entry: " . $url);
+				Minz_Log::notice("[Discord] 📷 Selected: " . $largestThumb['url'] . " (" . ($largestThumb['width'] ?? 'N/A') . "x" . ($largestThumb['height'] ?? 'N/A') . ")");
+				Minz_Log::notice("[Discord] 📷 Alternatives: " . implode(", ", $allThumbUrls));
+
+				// Use the largest thumbnail
+				$this->sendImageMessage(
+					$webhookUrl,
+					$username,
+					$avatarUrl,
+					$largestThumb['url']
+				);
+			} else {
+				$this->sendMessage(
+					$webhookUrl,
+					$username,
+					$avatarUrl,
+					["content" => $url]
+				);
+				Minz_Log::warning("[Discord] ⚠️ No thumbnails found for entry: " . $url);
+			}
     } else {
       $converter = new HtmlConverter(["strip_tags" => true]);
       $thumb = $entry->thumbnail();
