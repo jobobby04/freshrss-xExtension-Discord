@@ -133,7 +133,7 @@ class DiscordExtension extends Minz_Extension
         ["content" => $url]
       );
     } elseif ($embedAsImage) {
-			$thumbs = $entry->thumbnails();
+			$thumbs = $entry->thumbnail();
 
 			if (!empty($thumbs)) {
 				// Find thumbnail with the largest width
