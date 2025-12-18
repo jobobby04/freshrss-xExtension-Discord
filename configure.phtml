@@ -43,6 +43,14 @@ declare(strict_types=1);
         <p class="help"><img class="icon" src="../themes/icons/help.svg" loading="lazy" alt="ℹ️"> Write one search filter per line. Operators <a href="https://freshrss.github.io/FreshRSS/en/users/10_filter.html#with-the-search-field" target="_blank">see documentation</a>.</p>
       </div>
     </div>
+
+	  <div class="form-group">
+		  <label for="embed_as_image_patterns" class="group-name">Embed as image ...</label>
+		  <div class="group-controls">
+			  <textarea id="embed_as_image_patterns" name="embed_as_image_patterns" class="w100" placeholder="Leave blank to disable"><?= $this->getSystemConfigurationValue("embed_as_image_patterns", "") ?></textarea>
+			  <p class="help"><img class="icon" src="../themes/icons/help.svg" loading="lazy" alt="ℹ️"> Write one search filter per line. Operators <a href="https://freshrss.github.io/FreshRSS/en/users/10_filter.html#with-the-search-field" target="_blank">see documentation</a>.</p>
+		  </div>
+	  </div>
   </fieldset>
 
   <div class="form-group form-actions">
