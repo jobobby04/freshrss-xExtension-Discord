@@ -53,10 +53,10 @@ declare(strict_types=1);
     </div>
 
     <div class="form-group">
-      <label for="tag_webhook_mapping" class="group-name">Tag to Webhook Mapping</label>
+      <label for="category_webhook_mapping" class="group-name">Category to Webhook Mapping</label>
       <div class="group-controls">
-        <textarea id="tag_webhook_mapping" name="tag_webhook_mapping" class="w100" placeholder="Format: tag1=webhook_url1&#10;tag2=webhook_url2&#10;Leave blank to use default URL"><?= $this->getSystemConfigurationValue("tag_webhook_mapping", "") ?></textarea>
-        <p class="help"><img class="icon" src="../themes/icons/help.svg" loading="lazy" alt="ℹ️"> Map specific tags to different Discord webhooks. One tag per line in format: tag=webhook_url</p>
+        <textarea id="category_webhook_mapping" name="category_webhook_mapping" class="w100" placeholder="Format: category1=webhook_url1&#10;category2=webhook_url2&#10;Leave blank to use default URL"><?= $this->getSystemConfigurationValue("category_webhook_mapping", "") ?></textarea>
+        <p class="help"><img class="icon" src="../themes/icons/help.svg" loading="lazy" alt="ℹ️"> Map specific categories to different Discord webhooks. One category per line in format: category=webhook_url</p>
       </div>
     </div>
   </fieldset>

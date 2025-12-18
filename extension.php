@@ -29,7 +29,7 @@ class DiscordExtension extends Minz_Extension
         "ignore_autoread" => Minz_Request::paramBoolean("ignore_autoread"),
         "embed_as_link_patterns" => Minz_Request::paramString("embed_as_link_patterns"),
         "embed_as_image_patterns" => Minz_Request::paramString("embed_as_image_patterns"),
-        "tag_webhook_mapping" => Minz_Request::paramString("tag_webhook_mapping"),
+        "category_webhook_mapping" => Minz_Request::paramString("category_webhook_mapping"),
       ];
 
       $this->setSystemConfiguration($config);
@@ -43,30 +43,29 @@ class DiscordExtension extends Minz_Extension
   }
 
   /**
-   * Get the webhook URL for an entry based on its tags
+   * Get the webhook URL for an entry based on its category
    * Returns the default URL if no specific mapping exists
    */
   private function getWebhookUrlForEntry(FreshRSS_Entry $entry): string
   {
-    $tagMapping = $this->getSystemConfigurationValue("tag_webhook_mapping", "");
-    $mapping = $this->parseTagWebhookMapping($tagMapping);
+    $categoryMapping = $this->getSystemConfigurationValue("category_webhook_mapping", "");
+    $mapping = $this->parseCategoryWebhookMapping($categoryMapping);
 
-    // Check each tag for a matching webhook
-    foreach ($entry->tags() as $tag) {
-      if (isset($mapping[$tag])) {
-        Minz_Log::notice("[Discord] ✅ Using specific webhook for tag: " . $tag);
-        return $mapping[$tag];
-      }
+    // Check the category for a matching webhook
+	$category = $entry->feed()->category()->name();
+    if (isset($mapping[$category])) {
+	  Minz_Log::notice("[Discord] ✅ Using specific webhook for category: " . $category);
+	  return $mapping[$category];
     }
 
-    // No tag-specific webhook found, use default
+    // No category-specific webhook found, use default
     return $this->getSystemConfigurationValue("url");
   }
 
   /**
-   * Parse the tag-webhook mapping string into an associative array
+   * Parse the category-webhook mapping string into an associative array
    */
-  private function parseTagWebhookMapping(string $mappingString): array
+  private function parseCategoryWebhookMapping(string $mappingString): array
   {
     $mapping = [];
     $lines = explode("\n", $mappingString);
@@ -77,12 +76,12 @@ class DiscordExtension extends Minz_Extension
         continue;
       }
 
-      list($tag, $webhookUrl) = explode('=', $line, 2);
-      $tag = trim($tag);
+      list($category, $webhookUrl) = explode('=', $line, 2);
+      $category = trim($category);
       $webhookUrl = trim($webhookUrl);
 
-      if (!empty($tag) && !empty($webhookUrl)) {
-        $mapping[$tag] = $webhookUrl;
+      if (!empty($category) && !empty($webhookUrl)) {
+        $mapping[$category] = $webhookUrl;
       }
     }
 
@@ -121,7 +120,7 @@ class DiscordExtension extends Minz_Extension
       }
     }
 
-    // Get the appropriate webhook URL based on entry tags
+    // Get the appropriate webhook URL based on entry category
     $webhookUrl = $this->getWebhookUrlForEntry($entry);
     $username = $this->getSystemConfigurationValue("username");
     $avatarUrl = $this->getSystemConfigurationValue("avatar_url");
